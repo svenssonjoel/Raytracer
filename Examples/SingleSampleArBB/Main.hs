@@ -20,7 +20,7 @@ import Intel.ArbbVM
 import Intel.ArbbVM.Convenience
 
 ---------------------------------------------------------------------------- 
--- Convert a float image to a byte (0,256] image using ArBB  
+-- Convert a float image to a byte [0,255) image using ArBB  
 arbbConvert :: Ptr RGB -> Ptr Int8 -> EmitArbb () 
 arbbConvert src targ = do 
   
@@ -83,7 +83,5 @@ main =
         xs -> head (sortBy cmpHits xs) 
 
     rgbs = map hitGetRGB image
-    --convert :: Hit -> [Word8]
-    --convert (Hit _ _ (RGB r g b)) = [floor (r*256), floor (g*256), floor (b*256)]
     
     cmpHits (Hit t0 _ _) (Hit t1 _ _) = compare t1 t0 
