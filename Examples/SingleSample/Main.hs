@@ -1,4 +1,4 @@
-
+{- 2012 Joel Svensson -} 
 
 import Trace.RGB
 import Trace.Vector3
@@ -9,6 +9,7 @@ import Trace.Objects.Triangle
 
 import Data.Maybe 
 import Data.Word
+import Data.List 
 
 import System.IO
 import Foreign.Marshal.Array
@@ -38,7 +39,9 @@ main =
     castRay  d (x,y) = 
       case (catMaybes (map (shapeHit (mkRay (Vector3 x y 0) d) 0 tmax) shapes)) of 
         [] -> Hit 0 (Vector3 0 0 0 ) (RGB 0.0 0.0 0.0)
-        (x:xs) -> x 
+        xs -> head (sortBy cmpHits xs) 
 
     convert :: Hit -> [Word8]
     convert (Hit _ _ (RGB r g b)) = [floor (r*256), floor (g*256), floor (b*256)]
+    
+    cmpHits (Hit t0 _ _) (Hit t1 _ _) = compare t1 t0 

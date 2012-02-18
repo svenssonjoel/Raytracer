@@ -1,3 +1,11 @@
 
 
-Raytracing experiments based on the book "Realistic Ray Tracing" by Peter Shirley and R. Keith Morley
+* Raytracing experiments:
+   +  based on the book "Realistic Ray Tracing" by Peter Shirley and R. Keith Morley
+
+
+* Examples: 
+  + Examples/SingleSample contains a single sample raytracer
+
+
+
