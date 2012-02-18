@@ -6,6 +6,6 @@ import Trace.RGB
 import Trace.Vector3
 
 
-data Hit = Hit Float   -- t parameter
-               Vector3 -- normal
-               RGB     -- Color
+data Hit = Hit {hitGetT :: Float,   -- t parameter
+                hitGetNormal :: Vector3, -- normal
+                hitGetRGB :: RGB}    -- Color
