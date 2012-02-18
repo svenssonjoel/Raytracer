@@ -61,3 +61,6 @@ crossProd (Vector3 x y z) (Vector3 u v w) =
 
 scaleVector :: Vector3 -> Float -> Vector3 
 scaleVector (Vector3 x y z) s = Vector3 (x*s) (y*s) (z*s)  
+
+
+(<*>) t (Vector3 x y z) = Vector3 (t*x) (t*y) (t*z)
