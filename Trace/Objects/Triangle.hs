@@ -23,29 +23,28 @@ instance Shape Triangle where
     then Nothing  
     else Just$ Hit tval (normalize ((p1-p0) `crossProd` (p2-p0))) color
     where
-      -- Directly from "Realistic RayTracing, Shirley and Morley 
-      (Vector3 a b c) = p0 - p1 
-      (Vector3 d e f) = p0 - p2 
-      (Vector3 g h i) = rayGetDir ray 
-      (Vector3 j k l) = p0 - (rayGetPos ray) 
-      eihf = e*i - h*f 
-      gfdi = g*f - d*i 
-      dheg = d*h - e*g
+      -- same as in Shirley & Morley but using dotProd & crossProd 
+      -- functions in-place of "inlining" their definitions. 
+      e0 = p0 - p1 
+      e1 = p0 - p2 
+    
+      e4 = p0 - rayGetPos ray
+  
+      e3 = e1 `crossProd` rayGetDir ray
       
-      denom = a*eihf + b*gfdi + c*dheg
+      denom  = e0 `dotProd` e3
       
       denom' = 1/denom 
       
-      beta  = (j*eihf + k*gfdi + l*dheg) * denom'
+      beta = (e4 `dotProd` e3) * denom' 
       
-      akjb = a*k - j*b
-      jcal = j*c - a*l 
-      blkc = b*l - k*c
+      e5 = e0 `crossProd` e4
       
-      gamma = (i*akjb + h*jcal + g*blkc) * denom'
+      gamma = (e5 `dotProd` rayGetDir ray) * denom'
+  
+      tval = -(e5 `dotProd` e1) * denom'
       
-      tval = -(f*akjb + e*jcal + d*blkc) * denom'
-    
+-- Now the above and the below look very similar.       
       
 -- From Real-time rendering 
 {-  shapeHit ray tmin tmax (Triangle p0 p1 p2 color) = 
@@ -69,7 +68,7 @@ instance Shape Triangle where
       f  = 1/a 
       
       --
-      s  = rayGetPos ray - p0 -- book says v0?? 
+      s  = rayGetPos ray - p0 
       u  = f * (s `dotProd` q)
       
       r  = s `crossProd` e1
