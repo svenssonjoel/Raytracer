@@ -41,7 +41,8 @@ arbbConvert src targ = do
   mapper <- funDef_ "mapper" [d_i] [d_f] $ \ [outp] [inp] -> do 
     map_ body [outp] [inp] 
   
-  inb <- createDenseBinding_ (castPtr src) 1 [500*500*3*4{-size-}] [4{-pitch-}] 
+  -- elements, not bytes. (size) 
+  inb <- createDenseBinding_ (castPtr src) 1 [500*500*3{-size-}] [4{-pitch-}] 
   outb <- createDenseBinding_ (castPtr targ) 1 [500*500*3] [1] 
   
   gin <- createGlobal_ d_f "input" inb
@@ -52,15 +53,72 @@ arbbConvert src targ = do
   
   execute_ mapper [vout] [vin] 
   
+----------------------------------------------------------------------------
+-- generate arbb vector math functions 
+genArbbDotProd = 
+  do 
+    s_f <- getScalarType_ ArbbF32
+    s_d <- getDenseType_ s_f 1  
+    funDef_ "dotProd" [s_f] [s_d,s_d] $ \ [out] [v1,v2] -> do 
+      prods <- createLocal_ s_d "prods" 
+      op_ ArbbOpMul [prods] [v1,v2] 
+      opDynamic_ ArbbOpAddReduce [out] [prods]
+    
+genArbbCrossProd =   
+  do 
+    s_f <- getScalarType_ ArbbF32
+    s_d <- getDenseType_ s_f 1 
+    funDef_ "crossProd" [s_d] [s_d,s_d] $ \ [r] [v1,v2] -> do 
+      lprods <- createLocal_ s_d "leftProds" 
+      rprods <- createLocal_ s_d "rightProds" 
+      
+      one    <- isize_ 1 
+      two    <- isize_ 2
+      opDynamic_ ArbbOpRotate [v1] [v1,one] 
+      opDynamic_ ArbbOpRotateReverse [v2] [v2,one] 
+      op_ ArbbOpMul [lprods] [v1,v2] 
+      opDynamic_ ArbbOpRotate [v1] [v1,one] 
+      opDynamic_ ArbbOpRotateReverse [v2] [v2,one] 
+      op_ ArbbOpMul [rprods] [v1,v2] 
+      op_ ArbbOpSub [r] [lprods,rprods]
+      
+bindToVar1D ptr s p t nom = 
+  do 
+   t' <- getScalarType_ t 
+   dt <- getDenseType_ t' 1
+   bin <- createDenseBinding_ (castPtr ptr) 1 [s{-size-}] [p{-pitch-}] 
+   glob <- createGlobal_ dt nom bin
+   variableFromGlobal_ glob
+   
 
 ----------------------------------------------------------------------------
 -- Main
 main = 
-  withBinaryFile "test.raw" WriteMode $ \ handle -> 
-     withArray rgbs $ \ arr -> 
-        allocaArray (500*500*3) $ \ bytes -> do 
-          arbbSession (arbbConvert arr bytes) 
-          hPutBuf handle bytes (500*500*3) 
+  -- Test
+  withArray [1.0,1.0,1.0 :: Float] $ \ v1 -> 
+    withArray [2.0,3.0,4.0 :: Float] $ \ v2 -> 
+      allocaArray (3*4) $ \ r -> 
+        do 
+          arbbSession $ 
+           do  
+             f1 <- genArbbCrossProd
+
+             var1 <- bindToVar1D v1 (3 {-elements-}) 4 ArbbF32 "v1" 
+             var2 <- bindToVar1D v2 3 4 ArbbF32 "v2" 
+             res1 <- bindToVar1D r  3 4 ArbbF32 "r" 
+          
+             execute_ f1 [res1] [var1,var2] 
+          result <- (peekArray 3 r :: IO [Float])
+          putStrLn $ show result    
+          putStrLn $ show (Vector3 1 1 1 `crossProd` Vector3 2 3 4)
+          
+          
+  
+  --withBinaryFile "test.raw" WriteMode $ \ handle -> 
+  --   withArray rgbs $ \ arr -> 
+  --      allocaArray (500*500*3) $ \ bytes -> do 
+  --        arbbSession (arbbConvert arr bytes) 
+  --        hPutBuf handle bytes (500*500*3) 
   
     
   where 
