@@ -60,8 +60,8 @@ instance Shape Triangle where
         else
           Just$ Hit t e1 color -- (normalize ((p1-p0) `crossProd` (p2-p0))) color
     where 
-      e1 = p0 - p1 
-      e2 = p2 - p1 
+      e1 = p1 - p0 
+      e2 = p2 - p0 
       q  = rayGetDir ray `crossProd` e2
       a  = e1 `dotProd` q
       
@@ -69,7 +69,7 @@ instance Shape Triangle where
       f  = 1/a 
       
       --
-      s  = rayGetPos ray - p1 -- book says v0?? 
+      s  = rayGetPos ray - p0 -- book says v0?? 
       u  = f * (s `dotProd` q)
       
       r  = s `crossProd` e1
