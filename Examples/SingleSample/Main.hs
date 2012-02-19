@@ -28,9 +28,9 @@ main =
     pixCoords = [(x,y) | y <- [0..499], x <- [0..499]] 
     
     shapesTrigs = [Triangle (Vector3 300 600 (-800)) 
-                       (Vector3 0 100 (-1000)) 
-                       (Vector3 450 20 (-1000))
-                       (RGB 0.8 0.2 0.2)] 
+                            (Vector3 0 100 (-1000)) 
+                            (Vector3 450 20 (-1000))
+                            (RGB 0.8 0.2 0.2)] 
     shapesSpheres = [Sphere   (Vector3 250 250 (-1000))
                               150
                               (RGB 0.2 0.2 0.8)] 

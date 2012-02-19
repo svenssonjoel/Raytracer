@@ -49,14 +49,14 @@ normalize v@(Vector3 x y z) = Vector3 (x / m) (y / m) (z / m)
     m = magnitude v
     
 dotProd :: Vector3 -> Vector3 -> Float    
-dotProd (Vector3 x y z) (Vector3 u v w) = 
-  x * u + y * v + z * w 
+dotProd (Vector3 u1 u2 u3) (Vector3 v1 v2 v3) = 
+  u1*v1 + u2*v2 + u3*v3
 
 crossProd  :: Vector3 -> Vector3 -> Vector3 
-crossProd (Vector3 x y z) (Vector3 u v w) = 
-  Vector3 (y * w - z * v) 
-          (z * u - x * w) 
-          (x * v - y * u) 
+crossProd (Vector3 ux uy uz) (Vector3 vx vy vz) = 
+  Vector3 (uy*vz - uz*vy)
+          (uz*vx - ux*vz) 
+          (ux*vy - uy*vx)
   
 
 scaleVector :: Vector3 -> Float -> Vector3 
