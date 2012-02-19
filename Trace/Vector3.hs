@@ -38,8 +38,6 @@ instance Num Vector3 where
 ----------------------------------------------------------------------------
 -- Vector ops 
 
-
-
 magnitude :: Vector3 -> Float 
 magnitude (Vector3 x y z) = sqrt (x*x + y*y + z*z) 
 
