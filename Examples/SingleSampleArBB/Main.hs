@@ -6,6 +6,7 @@ import Trace.Ray
 import Trace.Shape
 import Trace.Hit 
 import Trace.Objects.Triangle
+import Trace.Objects.Sphere
 
 import Data.Maybe 
 import Data.Word
@@ -68,20 +69,31 @@ main =
     
     pixCoords = [(x,y) | y <- [0..499], x <- [0..499]] 
     
-    shapes = [Triangle (Vector3 300 600 (-500)) 
-                       (Vector3 0 100 (-1000)) 
-                       (Vector3 450 20 (-1000))
-                       (RGB 0.8 0.2 0.2)] 
+    shapesTrigs = [Triangle (Vector3 300 600 (-800)) 
+                            (Vector3 0 100 (-1000)) 
+                            (Vector3 450 20 (-1000))
+                            (RGB 0.8 0.2 0.2)] 
+    shapesSpheres = [Sphere   (Vector3 250 250 (-1000))
+                              150
+                              (RGB 0.2 0.2 0.8)] 
+             
     
     image = castRays dir pixCoords 
     tmax = 100000
     castRays d pc = map (castRay d) pc 
 
     castRay  d (x,y) = 
-      case (catMaybes (map (shapeHit (mkRay (Vector3 x y 0) d) 0 tmax) shapes)) of 
+      case (catMaybes (
+               map (shapeHit ray 0 tmax) shapesSpheres               
+               ++ 
+               map (shapeHit ray 0 tmax) shapesTrigs 
+
+               )) of 
         [] -> Hit 0 (Vector3 0 0 0 ) (RGB 0.0 0.0 0.0)
         xs -> head (sortBy cmpHits xs) 
+       where
+          ray = mkRay (Vector3 x y 0) d 
 
     rgbs = map hitGetRGB image
     
-    cmpHits (Hit t0 _ _) (Hit t1 _ _) = compare t1 t0 
+    cmpHits (Hit t0 _ _) (Hit t1 _ _) = compare t0 t1 
