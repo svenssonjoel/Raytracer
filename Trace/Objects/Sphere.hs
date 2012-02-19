@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-} 
 {- 2012 Joel Svensson -} 
 
 module Trace.Objects.Sphere where 

@@ -20,11 +20,11 @@ instance Shape Triangle where
     then Nothing  
     else Just$ Hit tval (normalize ((p1-p0) `crossProd` (p2-p0))) color
     where
-      -- Directly from "Realistic RayTracin, Shirley and Morley 
-      (Vector3 a b c) = p0 - p1 
-      (Vector3 d e f) = p0 - p2 
+      -- Directly from "Realistic RayTracing, Shirley and Morley 
+      (Vector3 a b c) = p1 - p0 -- This change makes picture correspond to debug image
+      (Vector3 d e f) = p1 - p2 -- but why ??
       (Vector3 g h i) = rayGetDir ray 
-      (Vector3 j k l) = p0 - (rayGetPos ray) 
+      (Vector3 j k l) = p1 - (rayGetPos ray) 
       eihf = e*i - h*f 
       gfdi = g*f - d*i 
       dheg = d*h - e*g

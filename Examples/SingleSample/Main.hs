@@ -35,15 +35,25 @@ main =
                               150
                               (RGB 0.2 0.2 0.8)] 
     
+    {-
+    shapesTrigs = [Triangle (Vector3 250 500 (-1000)) 
+                       (Vector3 0 0 (-1000)) 
+                       (Vector3 500 0 (-1000))
+                       (RGB 0.8 0.2 0.2)] 
+    shapesSpheres = [Sphere   (Vector3 250 250 (-1000))
+                              75
+                              (RGB 0.2 0.2 0.8)] 
+    -}
     image = castRays dir pixCoords 
     tmax = 100000
     castRays d pc = map (castRay d) pc 
    
     castRay  d (x,y) = 
       case (catMaybes (
-               map (shapeHit ray 0 tmax) shapesTrigs 
+               map (shapeHit ray 0 tmax) shapesSpheres               
                ++ 
-               map (shapeHit ray 0 tmax) shapesSpheres
+               map (shapeHit ray 0 tmax) shapesTrigs 
+
                )) of 
         [] -> Hit 0 (Vector3 0 0 0 ) (RGB 0.0 0.0 0.0)
         xs -> head (sortBy cmpHits xs) 
