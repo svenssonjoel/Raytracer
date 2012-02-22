@@ -34,7 +34,7 @@ arbbConvert src targ = do
   body <- funDef_ "body" [s_i] [s_f] $ \ [outp] [inp] -> do 
     imm  <- local_float32_ "imm"
     imm2 <- local_float32_ "imm2"
-    twofiftysix <- float32_ 256
+    twofiftysix <- float32_ 255
     op_ ArbbOpMul [imm] [inp,twofiftysix] 
     op_ ArbbOpFloor [imm2] [imm] 
     op_ ArbbOpCast  [outp]  [imm2]
@@ -43,8 +43,8 @@ arbbConvert src targ = do
     map_ body [outp] [inp] 
   
   -- elements, not bytes. (size) 
-  inb <- createDenseBinding_ (castPtr src) 1 [10*10*3{-size-}] [4{-pitch-}] 
-  outb <- createDenseBinding_ (castPtr targ) 1 [10*10*3] [1] 
+  inb <- createDenseBinding_ (castPtr src) 1 [500*500*3{-size-}] [4{-pitch-}] 
+  outb <- createDenseBinding_ (castPtr targ) 1 [500*500*3] [1] 
   
   gin <- createGlobal_ d_f "input" inb
   gout <- createGlobal_ d_i "output" outb 
@@ -242,42 +242,43 @@ main = do
       withArray [450.0,20.0,-1000.0 :: Float] $ \ p2 -> 
        withArray [0.8,0.2,0.2 :: Float] $ \ c -> 
         withArray [0.0,0.0,0.0 :: Float] $ \ black -> 
+         allocaArray (3*4) $ \ (r :: Ptr Float) -> 
            do 
-             
-             rgbs <- sequence
-               [do
-                 withArray [x,(y+98),0::Float]  $ \ o -> 
-                  allocaArray (3*4) $ \ (r :: Ptr Float) ->  
-                   arbbSession $ 
-                    do  
-                
-                      f1 <- genRayTrigIntersect
+             rgbs <- arbbSession $ 
+               do  
+                f1 <- genRayTrigIntersect
 
-                      d' <- bindToVar1D d (3 {-elements-}) 4 ArbbF32 "d" 
-                      o' <- bindToVar1D o 3 4 ArbbF32 "o" 
+                d' <- bindToVar1D d (3 {-elements-}) 4 ArbbF32 "d" 
+                      
               
-                      p0' <- bindToVar1D p0 3 4 ArbbF32 "p0" 
-                      p1' <- bindToVar1D p1 3 4 ArbbF32 "p1" 
-                      p2' <- bindToVar1D p2 3 4 ArbbF32 "p2" 
-                      c'  <- bindToVar1D  c  3 4 ArbbF32 "c" 
-                      black' <- bindToVar1D  black  3 4 ArbbF32 "b" 
+                p0' <- bindToVar1D p0 3 4 ArbbF32 "p0" 
+                p1' <- bindToVar1D p1 3 4 ArbbF32 "p1" 
+                p2' <- bindToVar1D p2 3 4 ArbbF32 "p2" 
+                c'  <- bindToVar1D  c  3 4 ArbbF32 "c" 
+                black' <- bindToVar1D  black  3 4 ArbbF32 "b" 
                
-                      r' <- bindToVar1D r 3 4 ArbbF32 "r" 
+                r' <- bindToVar1D r 3 4 ArbbF32 "r" 
+                
+                rgbs <- sequence
+                  [ withArray_ [x,y,0::Float]  $ \ o -> 
+                     do  
+                        o' <- bindToVar1D o 3 4 ArbbF32 "o" 
+                       
+                        execute_ f1 [r'] [o',d',p0',p1',p2',c',black'] 
               
-          
-                      execute_ f1 [r'] [o',d',p0',p1',p2',c',black'] 
-              
-                      result <- liftIO$ (peekArray 3 r :: IO [Float])
-                      liftIO$ putStrLn "*******************************************"
-                      return result 
-               | y <- [0..9], x <- [0..9]
-               ]   
+                        result <- liftIO$ (peekArray 3 r :: IO [Float])
+                        return result 
+                  | y <- [0..499], x <- [0..499]
+                  ]
+                return rgbs
+
+   
              putStrLn $ show $ length (concat rgbs)
              withBinaryFile "test.raw" WriteMode $ \ handle -> 
                withArray (concat rgbs) $ \ arr -> 
-                 allocaArray (10*10*3) $ \ bytes -> do 
+                 allocaArray (500*500*3) $ \ bytes -> do 
                   arbbSession (arbbConvert (castPtr arr) bytes) 
-                  hPutBuf handle bytes (10*10*3) 
+                  hPutBuf handle bytes (500*500*3) 
   
          
           
