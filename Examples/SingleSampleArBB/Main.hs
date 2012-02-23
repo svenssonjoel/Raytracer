@@ -259,6 +259,13 @@ main = do
                
                 r' <- bindToVar1D r 3 4 ArbbF32 "r" 
                 
+                -- produces expected image but is slow. 
+                -- execute_ is asynchronous so this 
+                -- leads to 500*500 threads launched (about 8 at a time on 4 core i7)  
+                -- each one computing one intersection. 
+                -- A better approach might be to divide the image 
+                -- into 4, 8 or 16 chunks and use one thread per such chunk 
+                -- (looping in each thread) 
                 rgbs <- sequence
                   [ withArray_ [x,y,0::Float]  $ \ o -> 
                      do  
@@ -273,7 +280,7 @@ main = do
                 return rgbs
 
    
-             putStrLn $ show $ length (concat rgbs)
+             --putStrLn $ show $ length (concat rgbs)
              withBinaryFile "test.raw" WriteMode $ \ handle -> 
                withArray (concat rgbs) $ \ arr -> 
                  allocaArray (500*500*3) $ \ bytes -> do 
