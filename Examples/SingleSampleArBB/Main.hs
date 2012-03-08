@@ -22,7 +22,7 @@ import Intel.ArbbVM
 import Intel.ArbbVM.Convenience
 
 ---------------------------------------------------------------------------- 
--- Convert a float image to a byte [0,255) image using ArBB  
+-- Convert a float image to a byte [0,1,..,255] image using ArBB  
 arbbConvert :: Ptr RGB -> Ptr Int8 -> EmitArbb () 
 arbbConvert src targ = do 
   
