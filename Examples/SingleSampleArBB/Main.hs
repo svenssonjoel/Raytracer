@@ -139,6 +139,7 @@ genRayTrigIntersect =
       op_ ArbbOpLeq [cond1] [beta,zero] 
       op_ ArbbOpGeq [cond2] [beta,one] 
       op_ ArbbOpMax [cond3] [cond1,cond2] -- Max used as or. possible ? 
+      -- Or is called ArbbOpLogOr
       
       if_ cond3 
         (do 
